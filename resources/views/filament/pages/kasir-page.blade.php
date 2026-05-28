@@ -28,6 +28,7 @@
   height: calc(100vh - 120px);
   min-height: 600px;
   font-family: 'DM Sans', sans-serif;
+  position: relative;
 }
 
 /* ─── LEFT PANEL ───────────────────────────────────────────── */
@@ -37,6 +38,7 @@
   flex-direction: column;
   gap: 14px;
   overflow: hidden;
+  min-width: 0;
 }
 
 /* Search */
@@ -228,6 +230,7 @@
   overflow: hidden;
   backdrop-filter: blur(20px);
   box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+  transition: transform .3s cubic-bezier(.4,0,.2,1), box-shadow .3s;
 }
 
 .cart-header {
@@ -451,6 +454,49 @@
 .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(111,78,55,0.55); }
 .btn-checkout:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
 
+/* ─── MOBILE CART TOGGLE BUTTON ────────────────────────────── */
+.cart-fab {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 500;
+  width: 60px; height: 60px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--roast), #9B6B4A);
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 8px 28px rgba(111,78,55,0.55);
+  cursor: pointer;
+  align-items: center; justify-content: center;
+  transition: transform .2s, box-shadow .2s;
+}
+.cart-fab:hover { transform: scale(1.08); box-shadow: 0 12px 36px rgba(111,78,55,0.65); }
+.cart-fab-badge {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 10px; font-weight: 800;
+  min-width: 20px; height: 20px;
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+  font-family: 'DM Mono', monospace;
+  border: 2px solid rgba(20,12,8,0.8);
+}
+
+/* Cart drawer overlay (mobile) */
+.cart-overlay-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 490;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+}
+
 /* ─── MODAL DETAIL MENU ────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 9999;
@@ -458,6 +504,8 @@
   background: rgba(0,0,0,0.75);
   backdrop-filter: blur(8px);
   animation: fadeIn .2s ease;
+  padding: 16px;
+  box-sizing: border-box;
 }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -465,18 +513,21 @@
   background: #1a100a;
   border: 1.5px solid rgba(196,168,130,0.2);
   border-radius: var(--r-xl);
-  width: 100%; max-width: 460px; margin: 16px;
+  width: 100%; max-width: 460px;
   overflow: hidden;
   box-shadow: 0 32px 80px rgba(0,0,0,0.7);
   animation: slideUp .25s cubic-bezier(.34,1.56,.64,1);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
 }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modal-img {
-  height: 230px;
+  height: 200px;
   background: linear-gradient(145deg, #1a100a, var(--roast));
   display: flex; align-items: center; justify-content: center;
   font-size: 72px; position: relative; overflow: hidden;
+  flex-shrink: 0;
 }
 .modal-img img { width: 100%; height: 100%; object-fit: cover; }
 .modal-img-overlay {
@@ -484,14 +535,14 @@
   background: linear-gradient(to top, #1a100a 0%, transparent 55%);
 }
 
-.modal-body { padding: 22px 24px 24px; }
+.modal-body { padding: 20px 22px 22px; }
 .modal-nama {
   font-family: 'Playfair Display', serif;
-  font-size: 22px; font-weight: 700;
+  font-size: 20px; font-weight: 700;
   margin-bottom: 8px;
   letter-spacing: 0.01em;
 }
-.modal-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.modal-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
 .modal-kat {
   font-size: 11.5px;
   background: rgba(196,168,130,0.12);
@@ -504,12 +555,12 @@
   border: 1px solid rgba(196,168,130,0.2);
 }
 .modal-status { font-size: 11.5px; padding: 4px 12px; border-radius: 999px; font-weight: 600; }
-.modal-desc { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.75; margin-bottom: 18px; }
+.modal-desc { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.75; margin-bottom: 16px; }
 .modal-harga {
   font-family: 'Playfair Display', serif;
-  font-size: 28px; font-weight: 700;
+  font-size: 26px; font-weight: 700;
   color: var(--caramel);
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   letter-spacing: 0.01em;
 }
 .modal-actions { display: flex; gap: 10px; }
@@ -537,11 +588,13 @@
 
 /* ─── STRUK / RECEIPT ──────────────────────────────────────── */
 .struk-box {
-  width: 100%; max-width: 370px; margin: 16px;
+  width: 100%; max-width: 370px;
   border-radius: var(--r-xl);
   overflow: hidden;
   box-shadow: 0 32px 80px rgba(0,0,0,0.6);
   animation: slideUp .25s cubic-bezier(.34,1.56,.64,1);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
 }
 
 .struk-header {
@@ -714,9 +767,184 @@
 }
 .kosong-state-icon { font-size: 52px; opacity: .35; }
 
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET (≤ 900px)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .kasir-wrap {
+    height: auto;
+    min-height: unset;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .kasir-menu-panel {
+    /* Full height for menu on tablet; cart goes below */
+    height: auto;
+  }
+
+  .menu-grid {
+    max-height: 55vh;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 12px;
+  }
+
+  .kasir-cart-panel {
+    width: 100%;
+    max-height: 480px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤ 640px)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .kasir-wrap {
+    gap: 12px;
+    padding-bottom: 80px; /* Space for FAB */
+  }
+
+  /* Menu panel takes all space */
+  .kasir-menu-panel {
+    height: auto;
+  }
+
+  /* Search smaller */
+  .kasir-search input {
+    font-size: 13px;
+    padding: 10px 16px 10px 42px;
+  }
+
+  /* Category tabs smaller */
+  .kat-btn {
+    font-size: 11.5px;
+    padding: 6px 14px;
+  }
+
+  /* Menu grid: 2 cols always on phone */
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    max-height: calc(100vh - 220px);
+    padding-right: 2px;
+  }
+
+  .menu-card-img {
+    height: 95px;
+    font-size: 28px;
+  }
+
+  .menu-card-body { padding: 9px 10px; }
+  .menu-card-nama { font-size: 12.5px; }
+  .menu-card-kat  { font-size: 10px; }
+  .menu-card-desc { display: none; } /* Hide desc on small screens */
+  .menu-harga     { font-size: 12px; }
+  .btn-plus       { width: 27px; height: 27px; font-size: 18px; border-radius: 8px; }
+
+  /* Cart panel: off-canvas drawer from bottom */
+  .kasir-cart-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%;
+    max-height: 85vh;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    z-index: 500;
+    transform: translateY(100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+    box-shadow: 0 -16px 60px rgba(0,0,0,0.6);
+  }
+
+  /* Cart open state */
+  .kasir-cart-panel.cart-open {
+    transform: translateY(0);
+  }
+
+  /* Drag handle on cart */
+  .kasir-cart-panel::before {
+    content: '';
+    display: block;
+    width: 40px; height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  /* Overlay bg shown when cart open */
+  .cart-overlay-bg.cart-open {
+    display: block;
+  }
+
+  /* FAB shown on mobile */
+  .cart-fab {
+    display: flex;
+  }
+
+  /* Cart header: add close btn affordance */
+  .cart-header {
+    padding: 12px 16px;
+  }
+
+  .cart-fields {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .total-nominal {
+    font-size: 22px;
+  }
+
+  .cart-footer {
+    padding: 12px 14px;
+  }
+
+  /* Struk modal full screen on mobile */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .struk-box {
+    max-width: 100%;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    max-height: 90vh;
+  }
+
+  .modal-box {
+    max-width: 100%;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    margin: 0;
+    max-height: 90vh;
+  }
+
+  .struk-header { padding: 20px 18px 18px; }
+  .struk-body   { padding: 20px 16px 14px; }
+  .struk-footer { padding: 12px 16px 16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — SMALL PHONE (≤ 380px)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .menu-card-img { height: 80px; font-size: 24px; }
+  .menu-card-body { padding: 8px; }
+  .menu-card-nama { font-size: 11.5px; }
+  .menu-harga     { font-size: 11px; }
+  .btn-plus       { width: 24px; height: 24px; font-size: 16px; border-radius: 7px; }
+
+  .bayar-grid { grid-template-columns: repeat(3,1fr); gap: 5px; }
+  .bayar-btn  { font-size: 10.5px; padding: 7px 2px; }
+
+  .total-nominal { font-size: 20px; }
+}
+
 /* ─── PRINT STYLES ─────────────────────────────────────────── */
 @media print {
-  /* Paksa semua warna & background tercetak */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -729,14 +957,8 @@
     background: white !important;
   }
 
-  /* Sembunyikan semua pakai visibility (aman untuk nested DOM Filament/Livewire) */
-  body * {
-    visibility: hidden !important;
-  }
-  #struk-print,
-  #struk-print * {
-    visibility: visible !important;
-  }
+  body * { visibility: hidden !important; }
+  #struk-print, #struk-print * { visibility: visible !important; }
 
   #struk-print {
     position: fixed !important;
@@ -744,7 +966,6 @@
     width: 80mm !important;
   }
 
-  /* Reset modal overlay ke block biasa */
   #struk-print .modal-overlay {
     position: static !important;
     background: none !important;
@@ -762,9 +983,9 @@
     box-shadow: none !important;
     animation: none !important;
     overflow: visible !important;
+    max-height: none !important;
   }
 
-  /* Header — solid color, tanpa gradient agar pasti tercetak */
   .struk-header {
     background-color: #2C1810 !important;
     background-image: none !important;
@@ -772,161 +993,55 @@
     color: #ffffff !important;
   }
   .struk-header::after { display: none !important; }
-
-  /* Paksa teks header putih & pakai font system agar tidak double */
   .struk-brand {
     font-family: Georgia, 'Times New Roman', serif !important;
-    font-size: 15px !important;
-    font-weight: bold !important;
-    color: #ffffff !important;
-    text-shadow: none !important;
-    letter-spacing: 0.05em;
+    font-size: 15px !important; font-weight: bold !important;
+    color: #ffffff !important; text-shadow: none !important;
   }
-  .struk-logo-icon {
-    font-size: 22px !important;
-    margin-bottom: 6px !important;
-    color: #ffffff !important;
-  }
-  .struk-tagline {
-    font-size: 8px !important;
-    color: rgba(255,255,255,0.75) !important;
-    margin-top: 2px !important;
-  }
+  .struk-logo-icon { font-size: 22px !important; margin-bottom: 6px !important; color: #ffffff !important; }
+  .struk-tagline { font-size: 8px !important; color: rgba(255,255,255,0.75) !important; margin-top: 2px !important; }
 
-  /* Body */
   .struk-body {
-    background-color: #ffffff !important;
-    background-image: none !important;
+    background-color: #ffffff !important; background-image: none !important;
     padding: 12px 10px 8px !important;
-    font-family: Arial, sans-serif !important;
-    color: #1a100a !important;
+    font-family: Arial, sans-serif !important; color: #1a100a !important;
   }
-
-  /* Meta grid */
-  .struk-meta-grid {
-    gap: 5px !important;
-    margin-bottom: 10px !important;
-  }
+  .struk-meta-grid { gap: 5px !important; margin-bottom: 10px !important; }
   .struk-meta-item {
-    background-color: #f7f0e8 !important;
-    background-image: none !important;
-    border: 1px solid #c8a87a !important;
-    border-radius: 5px !important;
-    padding: 6px 8px !important;
+    background-color: #f7f0e8 !important; background-image: none !important;
+    border: 1px solid #c8a87a !important; border-radius: 5px !important; padding: 6px 8px !important;
   }
-  .struk-meta-label {
-    font-size: 7.5px !important;
-    color: #7a5a3a !important;
-    font-family: Arial, sans-serif !important;
-  }
-  .struk-meta-val {
-    font-size: 10.5px !important;
-    color: #1a100a !important;
-    font-family: 'Courier New', monospace !important;
-    font-weight: bold !important;
-  }
-
-  /* Divider */
-  .struk-divider {
-    border: none !important;
-    border-top: 1px dashed #b09070 !important;
-    margin: 0 0 8px !important;
-  }
-
-  /* Items header */
-  .struk-items-head {
-    font-size: 7.5px !important;
-    color: #7a5a3a !important;
-    margin-bottom: 4px !important;
-    font-family: Arial, sans-serif !important;
-  }
-
-  /* Items */
-  .struk-item {
-    padding: 5px 0 !important;
-    font-size: 11px !important;
-    border-bottom: 1px solid #e0d0be !important;
-    font-family: Arial, sans-serif !important;
-  }
+  .struk-meta-label { font-size: 7.5px !important; color: #7a5a3a !important; font-family: Arial, sans-serif !important; }
+  .struk-meta-val { font-size: 10.5px !important; color: #1a100a !important; font-family: 'Courier New', monospace !important; font-weight: bold !important; }
+  .struk-divider { border: none !important; border-top: 1px dashed #b09070 !important; margin: 0 0 8px !important; }
+  .struk-items-head { font-size: 7.5px !important; color: #7a5a3a !important; margin-bottom: 4px !important; font-family: Arial, sans-serif !important; }
+  .struk-item { padding: 5px 0 !important; font-size: 11px !important; border-bottom: 1px solid #e0d0be !important; font-family: Arial, sans-serif !important; }
   .struk-item:last-of-type { border-bottom: none !important; }
-  .struk-item-name {
-    font-size: 11px !important;
-    font-weight: bold !important;
-    color: #1a100a !important;
-    font-family: Arial, sans-serif !important;
-  }
-  .struk-item-qty {
-    font-size: 9.5px !important;
-    color: #7a5a3a !important;
-    font-family: 'Courier New', monospace !important;
-  }
-  .struk-item-price {
-    font-size: 11px !important;
-    font-weight: bold !important;
-    color: #1a100a !important;
-    font-family: 'Courier New', monospace !important;
-  }
-  .struk-item-note {
-    font-size: 9px !important;
-    color: #9a7a5a !important;
-  }
-
-  /* Total section — solid background */
+  .struk-item-name { font-size: 11px !important; font-weight: bold !important; color: #1a100a !important; font-family: Arial, sans-serif !important; }
+  .struk-item-qty { font-size: 9.5px !important; color: #7a5a3a !important; font-family: 'Courier New', monospace !important; }
+  .struk-item-price { font-size: 11px !important; font-weight: bold !important; color: #1a100a !important; font-family: 'Courier New', monospace !important; }
+  .struk-item-note { font-size: 9px !important; color: #9a7a5a !important; }
   .struk-total-section {
-    background-color: #2C1810 !important;
-    background-image: none !important;
-    border-radius: 6px !important;
-    padding: 10px 12px !important;
-    margin-top: 10px !important;
+    background-color: #2C1810 !important; background-image: none !important;
+    border-radius: 6px !important; padding: 10px 12px !important; margin-top: 10px !important;
   }
-  .struk-total-main {
-    margin-top: 8px !important;
-    padding-top: 8px !important;
-    border-top: 1px solid rgba(255,255,255,0.3) !important;
-  }
-  .struk-total-label {
-    font-size: 9px !important;
-    color: rgba(255,255,255,0.8) !important;
-    font-family: Arial, sans-serif !important;
-  }
-  .struk-total-amount {
-    font-family: Georgia, 'Times New Roman', serif !important;
-    font-size: 20px !important;
-    font-weight: bold !important;
-    color: #C4A882 !important;
-  }
+  .struk-total-main { margin-top: 8px !important; padding-top: 8px !important; border-top: 1px solid rgba(255,255,255,0.3) !important; }
+  .struk-total-label { font-size: 9px !important; color: rgba(255,255,255,0.8) !important; font-family: Arial, sans-serif !important; }
+  .struk-total-amount { font-family: Georgia, 'Times New Roman', serif !important; font-size: 20px !important; font-weight: bold !important; color: #C4A882 !important; }
   .struk-bayar-pill {
-    font-size: 8.5px !important;
-    padding: 3px 9px !important;
-    margin-top: 8px !important;
-    color: rgba(255,255,255,0.85) !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    background-color: rgba(255,255,255,0.1) !important;
-    background-image: none !important;
-    border-radius: 999px !important;
-    display: inline-flex !important;
-    font-family: Arial, sans-serif !important;
-    font-weight: bold !important;
-    letter-spacing: 0.06em !important;
-    text-transform: uppercase !important;
+    font-size: 8.5px !important; padding: 3px 9px !important; margin-top: 8px !important;
+    color: rgba(255,255,255,0.85) !important; border: 1px solid rgba(255,255,255,0.3) !important;
+    background-color: rgba(255,255,255,0.1) !important; background-image: none !important;
+    border-radius: 999px !important; display: inline-flex !important;
+    font-family: Arial, sans-serif !important; font-weight: bold !important;
   }
-
-  /* Terima kasih */
-  .struk-thanks {
-    font-size: 9px !important;
-    margin-top: 12px !important;
-    color: #9a7a5a !important;
-    font-family: Arial, sans-serif !important;
-  }
-
-  /* Sembunyikan tombol */
+  .struk-thanks { font-size: 9px !important; margin-top: 12px !important; color: #9a7a5a !important; font-family: Arial, sans-serif !important; }
   .struk-footer { display: none !important; }
+  /* Hide FAB & overlay on print */
+  .cart-fab, .cart-overlay-bg { display: none !important; }
 }
 
-@page {
-  size: 80mm auto;
-  margin: 0;
-}
+@page { size: 80mm auto; margin: 0; }
 </style>
 @endassets
 
@@ -971,17 +1086,14 @@
 <div class="modal-overlay" id="struk-print">
   <div class="struk-box">
 
-    {{-- Header brand --}}
     <div class="struk-header">
       <span class="struk-logo-icon">☕</span>
       <div class="struk-brand">Kopi Nusantara</div>
       <div class="struk-tagline">Struk Pembayaran</div>
     </div>
 
-    {{-- Body --}}
     <div class="struk-body">
 
-      {{-- Meta grid --}}
       <div class="struk-meta-grid">
         <div class="struk-meta-item">
           <div class="struk-meta-label">No. Order</div>
@@ -1003,13 +1115,11 @@
 
       <hr class="struk-divider">
 
-      {{-- Items header --}}
       <div class="struk-items-head">
         <span>Item</span>
         <span>Subtotal</span>
       </div>
 
-      {{-- Items list --}}
       @foreach($strukData['items'] as $item)
       <div class="struk-item">
         <div class="struk-item-left">
@@ -1023,7 +1133,6 @@
       </div>
       @endforeach
 
-      {{-- Total section --}}
       <div class="struk-total-section">
         <div class="struk-total-main">
           <div>
@@ -1041,9 +1150,8 @@
 
       <div class="struk-thanks">— Terima kasih telah berkunjung —</div>
 
-    </div>{{-- /struk-body --}}
+    </div>
 
-    {{-- Footer buttons --}}
     <div class="struk-footer">
       <button class="btn-print" onclick="window.print()">🖨️ Print Struk</button>
       <button class="btn-close-struk" wire:click="tutupStruk">Tutup</button>
@@ -1054,6 +1162,23 @@
 @endif
 
 {{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- MOBILE: Cart Overlay Background                            --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+<div class="cart-overlay-bg" id="cartOverlayBg" onclick="toggleCart(false)"></div>
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- MOBILE: Cart FAB                                           --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+<button class="cart-fab" id="cartFab" onclick="toggleCart(true)" aria-label="Buka keranjang">
+  🛒
+  @if($this->getTotalKeranjang() > 0)
+    <span class="cart-fab-badge" id="cartFabBadge">{{ $this->getTotalKeranjang() }}</span>
+  @else
+    <span class="cart-fab-badge" id="cartFabBadge" style="display:none">0</span>
+  @endif
+</button>
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
 {{-- LAYOUT KASIR UTAMA                                         --}}
 {{-- ═══════════════════════════════════════════════════════════ --}}
 <div class="kasir-wrap">
@@ -1061,7 +1186,6 @@
   {{-- ── PANEL KIRI: MENU ──────────────────────────────────── --}}
   <div class="kasir-menu-panel">
 
-    {{-- Search --}}
     <div class="kasir-search">
       <span class="ico">🔍</span>
       <input wire:model.live.debounce.300ms="cariMenu"
@@ -1069,7 +1193,6 @@
              placeholder="Cari nama menu...">
     </div>
 
-    {{-- Category Tabs --}}
     <div class="kat-tabs">
       <button class="kat-btn {{ is_null($kategoriAktif) ? 'aktif' : '' }}" wire:click="setKategori(null)">
         Semua
@@ -1082,7 +1205,6 @@
       @endforeach
     </div>
 
-    {{-- Menu Grid --}}
     <div class="menu-grid">
       @forelse($this->getMenuList() as $menu)
       <div class="menu-card {{ !$menu->tersedia ? 'habis' : '' }}" wire:click="lihatDetail({{ $menu->id }})">
@@ -1118,9 +1240,8 @@
   </div>
 
   {{-- ── PANEL KANAN: KERANJANG ────────────────────────────── --}}
-  <div class="kasir-cart-panel">
+  <div class="kasir-cart-panel" id="kasirCartPanel">
 
-    {{-- Header --}}
     <div class="cart-header">
       <div class="cart-header-left">
         <span class="cart-title-text">Keranjang</span>
@@ -1128,12 +1249,15 @@
           <span class="cart-badge">{{ $this->getTotalKeranjang() }}</span>
         @endif
       </div>
-      @if(!empty($keranjang))
-      <button class="btn-kosongkan" wire:click="kosongkanKeranjang">🗑 Kosongkan</button>
-      @endif
+      <div style="display:flex;align-items:center;gap:8px">
+        @if(!empty($keranjang))
+        <button class="btn-kosongkan" wire:click="kosongkanKeranjang">🗑 Kosongkan</button>
+        @endif
+        {{-- Close button visible only on mobile --}}
+        <button class="btn-kosongkan" id="cartCloseBtn" onclick="toggleCart(false)" style="display:none">✕ Tutup</button>
+      </div>
     </div>
 
-    {{-- Input Meja & Cara Bayar --}}
     <div class="cart-fields">
       <div>
         <div class="field-label">Nomor Meja</div>
@@ -1152,7 +1276,6 @@
       </div>
     </div>
 
-    {{-- Cart Items --}}
     <div class="cart-items">
       @forelse($keranjang as $i => $item)
       <div class="cart-item">
@@ -1183,7 +1306,6 @@
       @endforelse
     </div>
 
-    {{-- Footer: Total & Checkout --}}
     <div class="cart-footer">
       <div class="total-row">
         <span class="total-label">Total Bayar</span>
@@ -1201,4 +1323,91 @@
   </div>
 
 </div>
+
+{{-- ═══════════════════════════════════════════════════════════ --}}
+{{-- MOBILE CART JAVASCRIPT                                     --}}
+{{-- ═══════════════════════════════════════════════════════════ --}}
+<script>
+(function () {
+  const MOBILE_BP = 640;
+
+  function isMobile() {
+    return window.innerWidth <= MOBILE_BP;
+  }
+
+  function toggleCart(open) {
+    if (!isMobile()) return;
+    const panel   = document.getElementById('kasirCartPanel');
+    const overlay = document.getElementById('cartOverlayBg');
+    const closeBtn = document.getElementById('cartCloseBtn');
+    if (!panel) return;
+
+    if (open) {
+      panel.classList.add('cart-open');
+      overlay.classList.add('cart-open');
+      if (closeBtn) closeBtn.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    } else {
+      panel.classList.remove('cart-open');
+      overlay.classList.remove('cart-open');
+      if (closeBtn) closeBtn.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Expose globally for onclick handlers
+  window.toggleCart = toggleCart;
+
+  // Handle resize: reset state when crossing breakpoint
+  let lastMobile = isMobile();
+  window.addEventListener('resize', function () {
+    const nowMobile = isMobile();
+    if (lastMobile !== nowMobile) {
+      lastMobile = nowMobile;
+      if (!nowMobile) {
+        // Going to desktop: reset mobile drawer state
+        const panel   = document.getElementById('kasirCartPanel');
+        const overlay = document.getElementById('cartOverlayBg');
+        const closeBtn = document.getElementById('cartCloseBtn');
+        if (panel)   panel.classList.remove('cart-open');
+        if (overlay) overlay.classList.remove('cart-open');
+        if (closeBtn) closeBtn.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+  });
+
+  // Update FAB badge count whenever Livewire re-renders
+  document.addEventListener('livewire:update', updateFabBadge);
+  document.addEventListener('livewire:initialized', updateFabBadge);
+
+  function updateFabBadge() {
+    const badge = document.getElementById('cartFabBadge');
+    if (!badge) return;
+    // Read count from cart-badge element (already rendered by Livewire)
+    const cartBadge = document.querySelector('.kasir-cart-panel .cart-badge');
+    const count = cartBadge ? parseInt(cartBadge.textContent.trim()) || 0 : 0;
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  }
+
+  // Swipe down to close cart drawer
+  (function initSwipe() {
+    let startY = 0;
+    const panel = document.getElementById('kasirCartPanel');
+    if (!panel) return;
+
+    panel.addEventListener('touchstart', function (e) {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    panel.addEventListener('touchend', function (e) {
+      if (!isMobile()) return;
+      const deltaY = e.changedTouches[0].clientY - startY;
+      // Swipe down ≥ 80px closes cart
+      if (deltaY > 80) toggleCart(false);
+    }, { passive: true });
+  })();
+})();
+</script>
 </x-filament-panels::page>
